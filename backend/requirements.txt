@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+google-generativeai
+python-multipart
+# Use a mock twilio for now
+# twilio
+# Used for websocket
+websockets
