@@ -93,15 +93,14 @@ function AmbulanceDashboard() {
                 {activeDispatch.status}
               </div>
             </div>
-            <div className="w-full h-64 bg-zinc-900 rounded-2xl mb-6 relative overflow-hidden border border-zinc-800 flex flex-col items-center justify-center">
+            <div className="w-full h-64 bg-zinc-900 rounded-2xl mb-6 relative overflow-hidden border border-zinc-800 flex flex-col items-center justify-center pointer-events-none">
                 <iframe
                   width="100%"
                   height="100%"
-                  className="absolute inset-0"
-                  style={{ border: 0 }}
+                  className="absolute inset-0 scale-110 opacity-70"
+                  style={{ border: 0, filter: "invert(90%) hue-rotate(180deg)" }}
                   loading="lazy"
-                  allowFullScreen
-                  src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY || 'YOUR_MAPS_KEY_HERE'}&q=${activeDispatch.location.lat},${activeDispatch.location.lng}&zoom=16`}
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${activeDispatch.location.lng - 0.005}%2C${activeDispatch.location.lat - 0.005}%2C${activeDispatch.location.lng + 0.005}%2C${activeDispatch.location.lat + 0.005}&amp;layer=mapnik&amp;marker=${activeDispatch.location.lat}%2C${activeDispatch.location.lng}`}
                 ></iframe>
                 <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-xs font-mono text-zinc-300 backdrop-blur z-10 pointer-events-none">GPS: {activeDispatch.location.lat.toFixed(4)}, {activeDispatch.location.lng.toFixed(4)}</div>
             </div>

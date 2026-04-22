@@ -166,15 +166,15 @@ export default function DeepAdminDashboard() {
             )}
 
             {activeTab === "map" && (
-              <div className="flex-1 glass-panel rounded-[2rem] border border-zinc-800 p-0 flex flex-col items-center justify-center overflow-hidden relative">
+              <div className="flex-1 glass-panel rounded-[2rem] border border-zinc-800 p-0 flex flex-col items-center justify-center overflow-hidden relative bg-zinc-900">
                 <iframe
                   width="100%"
                   height="100%"
-                  className="w-full h-full absolute inset-0 rounded-[2rem]"
-                  style={{ border: 0 }}
+                  className="w-full h-full absolute inset-0 rounded-[2rem] opacity-80"
+                  style={{ border: 0, filter: "invert(90%) hue-rotate(180deg)" }}
                   loading="lazy"
                   allowFullScreen
-                  src={`https://www.google.com/maps/embed/v1/search?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY || 'YOUR_MAPS_KEY_HERE'}&q=Mumbai,India`}
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=72.77%2C18.97%2C72.97%2C19.17&amp;layer=mapnik&amp;marker=19.0760%2C72.8777"
                 ></iframe>
               </div>
             )}
