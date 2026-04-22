@@ -1,6 +1,9 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import router as api_router
+import os
 
 app = FastAPI(
     title="CivicResQ AI Emergency Response API",
@@ -17,11 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# API routing
 app.include_router(api_router, prefix="/api/v1")
-
-@app.get("/")
-def health_check():
-    return {"status": "ok", "system": "CivicResQ Core Running"}
 
 # Dummy websocket endpoint for live dashboard
 connected_clients = set()
@@ -43,3 +43,21 @@ async def broadcast_alert(message: str):
             await client.send_text(message)
         except:
             pass
+
+# Serve Next.js compiled frontend globally across missing routes
+FRONTEND_BUILD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "frontend", "out")
+if os.path.exists(FRONTEND_BUILD_DIR):
+    app.mount("/", StaticFiles(directory=FRONTEND_BUILD_DIR, html=True), name="frontend")
+else:
+    @app.get("/")
+    def fail_grace():
+        return {"error": "Frontend build not generated. Run npm run build."}
+
+@app.exception_handler(404)
+async def custom_404_handler(request: Request, exc: Exception):
+    if request.url.path.startswith("/api/"):
+        return {"error": "API route not found"}
+    index_file = os.path.join(FRONTEND_BUILD_DIR, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return {"error": "404 Not Found"}
