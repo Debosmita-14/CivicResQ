@@ -68,6 +68,17 @@ function AmbulanceDashboard() {
   const activeDispatch = incidents.find(i => ['DISPATCHED', 'ANALYZED'].includes(i.status) && ['CRITICAL', 'HIGH'].includes(i.severity));
   const pendingRequests = incidents.filter(i => i.status === 'ANALYZED' && !['CRITICAL', 'HIGH'].includes(i.severity));
 
+  const handleAcknowledge = async (id: str) => {
+    try {
+      const res = await fetch(`/api/v1/incidents/${id}/acknowledge`, { method: "PATCH" });
+      if (res.ok) {
+        setIncidents(incidents.map(inc => inc.id === id ? { ...inc, status: "ACKNOWLEDGED" } : inc));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 glass-panel p-6 rounded-3xl border border-blue-500/30 bg-blue-950/10">
@@ -123,7 +134,12 @@ function AmbulanceDashboard() {
               <h3 className="font-semibold text-white capitalize">{inc.incident_type.replace('_', ' ')}</h3>
               <p className="text-xs text-zinc-400 mb-4">ID: {inc.id}</p>
               <div className="flex gap-2">
-                <button className="flex-1 bg-blue-600/20 text-blue-500 py-2 rounded-lg font-semibold text-sm border border-blue-500/30 hover:bg-blue-600/30">Accept</button>
+                <button 
+                  onClick={() => handleAcknowledge(inc.id)}
+                  className="flex-1 bg-blue-600/20 text-blue-500 py-2 rounded-lg font-semibold text-sm border border-blue-500/30 hover:bg-blue-600/30"
+                >
+                  Accept
+                </button>
               </div>
             </div>
           ))}
@@ -147,7 +163,18 @@ function HospitalDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const incomingCriticals = incidents.filter(i => ['CRITICAL', 'HIGH'].includes(i.severity));
+  const incomingCriticals = incidents.filter(i => ['CRITICAL', 'HIGH'].includes(i.severity) && i.status !== 'ACKNOWLEDGED');
+
+  const handleAcknowledge = async (id: str) => {
+    try {
+      const res = await fetch(`/api/v1/incidents/${id}/acknowledge`, { method: "PATCH" });
+      if (res.ok) {
+        setIncidents(incidents.filter(inc => inc.id !== id));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -197,7 +224,12 @@ function HospitalDashboard() {
                 </div>
               </div>
               <div className="flex flex-col justify-center min-w-[140px] gap-2">
-                <button className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold py-3 rounded-xl shadow-lg transition-all text-center">Acknowledge</button>
+                <button 
+                  onClick={() => handleAcknowledge(inc.id)}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold py-3 rounded-xl shadow-lg transition-all text-center focus:ring-4 ring-emerald-500/30"
+                >
+                  Acknowledge
+                </button>
               </div>
             </div>
           ))}

@@ -90,3 +90,13 @@ async def trigger_sos_voice(request: VoiceSosRequest):
 async def get_active_incidents():
     db = get_db()
     return list(db.values())
+
+@router.patch("/incidents/{incident_id}/acknowledge")
+async def acknowledge_incident(incident_id: str):
+    db = get_db()
+    if incident_id not in db:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    
+    db[incident_id]["status"] = "ACKNOWLEDGED"
+    save_db(db)
+    return {"status": "success", "incident": db[incident_id]}
