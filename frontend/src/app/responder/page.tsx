@@ -68,7 +68,7 @@ function AmbulanceDashboard() {
   const activeDispatch = incidents.find(i => ['DISPATCHED', 'ANALYZED'].includes(i.status) && ['CRITICAL', 'HIGH'].includes(i.severity));
   const pendingRequests = incidents.filter(i => i.status === 'ANALYZED' && !['CRITICAL', 'HIGH'].includes(i.severity));
 
-  const handleAcknowledge = async (id: str) => {
+  const handleAcknowledge = async (id: string) => {
     try {
       const res = await fetch(`/api/v1/incidents/${id}/acknowledge`, { method: "PATCH" });
       if (res.ok) {
@@ -164,7 +164,7 @@ function HospitalDashboard() {
 
   const incomingCriticals = incidents.filter(i => ['CRITICAL', 'HIGH'].includes(i.severity) && i.status !== 'ACKNOWLEDGED');
 
-  const handleAcknowledge = async (id: str) => {
+  const handleAcknowledge = async (id: string) => {
     try {
       const res = await fetch(`/api/v1/incidents/${id}/acknowledge`, { method: "PATCH" });
       if (res.ok) {

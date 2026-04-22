@@ -45,7 +45,13 @@ async def broadcast_alert(message: str):
             pass
 
 # Serve Next.js compiled frontend globally across missing routes
-FRONTEND_BUILD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "frontend", "out")
+# Resolve path: backend/app/main.py -> backend/app -> backend -> repo_root -> frontend/out
+_BACKEND_APP_DIR = os.path.dirname(os.path.abspath(__file__))  # .../backend/app
+_BACKEND_DIR = os.path.dirname(_BACKEND_APP_DIR)               # .../backend
+_REPO_ROOT = os.path.dirname(_BACKEND_DIR)                      # .../repo_root
+FRONTEND_BUILD_DIR = os.path.join(_REPO_ROOT, "frontend", "out")
+print(f"[CivicResQ] Looking for frontend build at: {FRONTEND_BUILD_DIR}")
+print(f"[CivicResQ] Exists: {os.path.exists(FRONTEND_BUILD_DIR)}")
 if os.path.exists(FRONTEND_BUILD_DIR):
     app.mount("/", StaticFiles(directory=FRONTEND_BUILD_DIR, html=True), name="frontend")
 else:
