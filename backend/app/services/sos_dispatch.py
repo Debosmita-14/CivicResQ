@@ -1,14 +1,13 @@
 import os
+from twilio.rest import Client
 
-# Dummy Twilio library import
-class TwilioMockClient:
-    def __init__(self, account_sid, auth_token):
-        self.messages = self.MessageManager()
-        
-    class MessageManager:
-        def create(self, body, from_, to):
-            print(f"[TWILIO SMS SENT] To: {to} | Message: {body}")
-            return True
+def get_twilio_client():
+    account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+    auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+    if not account_sid or not auth_token:
+        print("Warning: Twilio API keys not found in environment. Using MOCK SMS logic for development.")
+        return None
+    return Client(account_sid, auth_token)
 
 def process_voice_sos(audio_file_path: str, user_phone: str, user_location: dict):
     """
@@ -42,7 +41,7 @@ def process_voice_sos(audio_file_path: str, user_phone: str, user_location: dict
     }
     
     # Step 3: Send auto-alert via Twilio
-    client = TwilioMockClient('MOCK_SID', 'MOCK_TOKEN')
+    client = get_twilio_client()
     
     # Construct the message
     msg_body = (
@@ -54,11 +53,19 @@ def process_voice_sos(audio_file_path: str, user_phone: str, user_location: dict
     )
     
     # Notify user via SMS
-    client.messages.create(
-        body=msg_body,
-        from_="+1234567890",
-        to=user_phone
-    )
+    if client:
+        twilio_number = os.environ.get("TWILIO_PHONE_NUMBER", "+1234567890")
+        try:
+            message = client.messages.create(
+                body=msg_body,
+                from_=twilio_number,
+                to=user_phone
+            )
+            print(f"✅ Real Twilio SMS sent: SID {message.sid}")
+        except Exception as e:
+            print(f"❌ Twilio Network Error: {e}")
+    else:
+        print(msg_body)
     
     # Notify dashboard/admin via websockets
     # websocket_manager.broadcast("NEW_CRITICAL_SOS", data)

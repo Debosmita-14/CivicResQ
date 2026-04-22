@@ -166,10 +166,16 @@ export default function DeepAdminDashboard() {
             )}
 
             {activeTab === "map" && (
-              <div className="flex-1 glass-panel rounded-[2rem] border border-zinc-800 p-6 flex flex-col items-center justify-center">
-                <Map size={64} className="text-zinc-700 mb-4" />
-                <h3 className="text-2xl font-bold text-white">Full Screen Live Map</h3>
-                <p className="text-zinc-500 mt-2">Connecting to Google Maps API backend...</p>
+              <div className="flex-1 glass-panel rounded-[2rem] border border-zinc-800 p-0 flex flex-col items-center justify-center overflow-hidden relative">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  className="w-full h-full absolute inset-0 rounded-[2rem]"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://www.google.com/maps/embed/v1/search?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY || 'YOUR_MAPS_KEY_HERE'}&q=Mumbai,India`}
+                ></iframe>
               </div>
             )}
 

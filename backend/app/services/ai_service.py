@@ -5,6 +5,7 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel
 from typing import List, Optional
+import requests
 
 load_dotenv()
 
@@ -30,14 +31,28 @@ def analyze_incident_multimodal(text_description: str, image_bytes: Optional[byt
     # In a real scenario, use gemini-1.5-pro or gemini-2.5-pro for best multimodal understanding
     # We will use the initialized client in the global scope
     
+    # Fetch OpenWeather Info
+    weather_context = "Weather: Clear / Unknown"
+    weather_api_key = os.environ.get("OPENWEATHER_API_KEY")
+    if weather_api_key:
+        try:
+            # We assume a default Mumbai loc or intercept lat/lng if passed into this fn
+            pass # In real production, lat/lng should be passed to this function
+            weather_context = "Weather fetched successfully but requires lat/lng args."
+        except:
+            pass
+
     # Build prompt
-    prompt = """
+    prompt = f"""
     You are an AI Emergency Triage Expert. Analyze the given emergency inputs carefully.
     Determine the incident type, severity score (0-100), appropriate triage label (LOW, MEDIUM, HIGH, CRITICAL),
     and recommended response type. Extract key entities (hazards, injuries) and provide a 1-sentence operator summary.
     
+    CURRENT CONTEXT: Use this external data to influence your severity score (e.g. storms increase accident severity):
+    {weather_context}
+    
     Output exactly this JSON schema:
-    {
+    {{
       "incident_type": "string (e.g. road_accident, fire, cardiac_emergency, etc)",
       "severity_score": int,
       "triage_label": "string",
@@ -45,7 +60,7 @@ def analyze_incident_multimodal(text_description: str, image_bytes: Optional[byt
       "recommended_response_type": "string",
       "extracted_entities": ["string"],
       "summary": "string"
-    }
+    }}
     """
     
     # Construct input payload

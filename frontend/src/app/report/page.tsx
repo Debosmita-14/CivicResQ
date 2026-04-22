@@ -9,6 +9,8 @@ export default function CitizenReportScreen() {
   const [loadingLoc, setLoadingLoc] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
   const [description, setDescription] = useState("");
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
+  const [voiceBase64, setVoiceBase64] = useState<string | null>(null);
 
   const fetchLiveLocation = () => {
     setLoadingLoc(true);
@@ -28,6 +30,19 @@ export default function CitizenReportScreen() {
     }
   };
 
+  const handleFileCapture = (e: React.ChangeEvent<HTMLInputElement>, type: 'photo' | 'voice') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const b64 = (reader.result as string).split(',')[1];
+        if (type === 'photo') setPhotoBase64(b64);
+        if (type === 'voice') setVoiceBase64(b64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSOSSubmit = async () => {
     setStatus("submitting");
     try {
@@ -37,7 +52,9 @@ export default function CitizenReportScreen() {
         body: JSON.stringify({
           reporter_id: "user_" + Math.random().toString(36).substring(7),
           text_description: description || "Emergency reported via SOS button.",
-          location: location || { lat: 19.0760, lng: 72.8777 } // default Mumbai approx
+          location: location || { lat: 19.0760, lng: 72.8777 }, // default Mumbai approx
+          image_base64: photoBase64,
+          audio_base64: voiceBase64
         })
       });
       if (res.ok) {
@@ -147,18 +164,27 @@ export default function CitizenReportScreen() {
 
           {/* Quick Input Grid */}
           <div className="grid grid-cols-2 gap-3 text-center">
-            <button className="bg-zinc-900/80 hover:bg-zinc-800 p-4 rounded-[1.5rem] border border-zinc-800 transition-all flex flex-col items-center justify-center gap-2 group">
-              <Camera size={24} className="text-zinc-500 group-hover:text-white transition-colors" />
-              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Photo</span>
-            </button>
-            <button className="bg-rose-950/20 hover:bg-rose-900/40 p-4 rounded-[1.5rem] border border-rose-900/30 transition-all flex flex-col items-center justify-center gap-2 group relative">
-              <span className="absolute top-2 right-2 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-              </span>
-              <Mic size={24} className="text-rose-500 group-hover:scale-110 transition-transform" />
-              <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider">Voice SOS</span>
-            </button>
+            
+            {/* Native OS Camera Hook */}
+            <label className={`cursor-pointer ${photoBase64 ? 'bg-emerald-900/40 border-emerald-500/50' : 'bg-zinc-900/80 border-zinc-800 hover:bg-zinc-800'} p-4 rounded-[1.5rem] border transition-all flex flex-col items-center justify-center gap-2 group`}>
+              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFileCapture(e, 'photo')} />
+              {photoBase64 ? <CheckCircle2 size={24} className="text-emerald-500" /> : <Camera size={24} className="text-zinc-500 group-hover:text-white transition-colors" />}
+              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">{photoBase64 ? 'Photo Saved' : 'Photo'}</span>
+            </label>
+
+            {/* Native OS Microphone Hook */}
+            <label className={`cursor-pointer ${voiceBase64 ? 'bg-emerald-900/40 border-emerald-500/50' : 'bg-rose-950/20 border-rose-900/30 hover:bg-rose-900/40'} p-4 rounded-[1.5rem] border transition-all flex flex-col items-center justify-center gap-2 group relative`}>
+              <input type="file" accept="audio/*" capture="user" className="hidden" onChange={(e) => handleFileCapture(e, 'voice')} />
+              {!voiceBase64 && (
+                <span className="absolute top-2 right-2 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                </span>
+              )}
+              {voiceBase64 ? <CheckCircle2 size={24} className="text-emerald-500" /> : <Mic size={24} className="text-rose-500 group-hover:scale-110 transition-transform" />}
+              <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider">{voiceBase64 ? 'Audio Saved' : 'Voice SOS'}</span>
+            </label>
+
           </div>
 
           <div className="bg-zinc-900/80 p-4 rounded-[1.5rem] border border-zinc-800 shadow-inner">

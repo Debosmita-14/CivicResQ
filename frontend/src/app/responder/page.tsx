@@ -83,10 +83,16 @@ function AmbulanceDashboard() {
               </div>
             </div>
             <div className="w-full h-64 bg-zinc-900 rounded-2xl mb-6 relative overflow-hidden border border-zinc-800 flex flex-col items-center justify-center">
-                <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: "linear-gradient(#4bf 1px, transparent 1px), linear-gradient(90deg, #4bf 1px, transparent 1px)", backgroundSize: "30px 30px" }}></div>
-                <Navigation2 size={40} className="text-blue-500 mx-auto mb-2 relative z-10" />
-                <p className="text-lg font-bold text-white relative z-10">GPS Coordinates Linked</p>
-                <p className="text-sm font-mono text-zinc-400 relative z-10">{activeDispatch.location.lat.toFixed(4)}, {activeDispatch.location.lng.toFixed(4)}</p>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  className="absolute inset-0"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY || 'YOUR_MAPS_KEY_HERE'}&q=${activeDispatch.location.lat},${activeDispatch.location.lng}&zoom=16`}
+                ></iframe>
+                <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-xs font-mono text-zinc-300 backdrop-blur z-10 pointer-events-none">GPS: {activeDispatch.location.lat.toFixed(4)}, {activeDispatch.location.lng.toFixed(4)}</div>
             </div>
             <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 mb-6">
               <h3 className="text-sm font-bold text-zinc-300 mb-2 flex items-center gap-2"><ShieldAlert size={16} className="text-blue-400"/> AI Patient Preview</h3>
