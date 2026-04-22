@@ -27,8 +27,15 @@ async def report_incident(request: ReportRequest, background_tasks: BackgroundTa
     print("Received Report Request...")
     
     # 1. Decode media if needed
-    img_bytes = base64.b64decode(request.image_base64) if request.image_base64 else None
-    audio_bytes = base64.b64decode(request.audio_base64) if request.audio_base64 else None
+    img_bytes = None
+    audio_bytes = None
+    try:
+        if request.image_base64:
+            img_bytes = base64.b64decode(request.image_base64)
+        if request.audio_base64:
+            audio_bytes = base64.b64decode(request.audio_base64)
+    except Exception as e:
+        print(f"Warning: Corrupted base64 payload. Continuing without media. Error: {e}")
     
     # 2. AI Multimodal Analysis
     analysis_result = analyze_incident_multimodal(
