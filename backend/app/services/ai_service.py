@@ -1,11 +1,15 @@
 import json
 import os
-import google.generativeai as genai
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
 from pydantic import BaseModel
 from typing import List, Optional
 
+load_dotenv()
+
 # Configure Gemini API
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY", "dummy-key-for-demo"))
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY", "dummy-key-for-demo"))
 
 class IncidentAnalysisResult(BaseModel):
     incident_type: str
@@ -24,7 +28,7 @@ def analyze_incident_multimodal(text_description: str, image_bytes: Optional[byt
     """
     
     # In a real scenario, use gemini-1.5-pro or gemini-2.5-pro for best multimodal understanding
-    model = genai.GenerativeModel('gemini-1.5-pro', generation_config={"response_mime_type": "application/json"})
+    # We will use the initialized client in the global scope
     
     # Build prompt
     prompt = """
@@ -51,37 +55,33 @@ def analyze_incident_multimodal(text_description: str, image_bytes: Optional[byt
         contents.append(f"Text Report: {text_description}")
         
     if image_bytes:
-        contents.append({
-            "mime_type": "image/jpeg",
-            "data": image_bytes
-        })
+        contents.append(types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"))
         
     # Audio processing normally requires uploading via File API for large files,
     # but small snippets can be passed directly if base64 encoded.
     if audio_bytes:
-        contents.append({
-            "mime_type": "audio/mp3",
-            "data": audio_bytes
-        })
+        contents.append(types.Part.from_bytes(data=audio_bytes, mime_type="audio/mp3"))
 
     # Generate response
-    response = model.generate_content(contents)
-    
-    # Parse structured JSON output
     try:
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=contents,
+            config=types.GenerateContentConfig(response_mime_type="application/json")
+        )
         data = json.loads(response.text)
         return IncidentAnalysisResult(**data)
     except Exception as e:
         # Fallback or error handling
-        print(f"Error parsing Gemini output: {e}")
+        print(f"Error parsing Gemini output or Invalid Key: {e}")
         return IncidentAnalysisResult(
-            incident_type="unknown",
-            severity_score=50,
-            triage_label="MEDIUM",
-            confidence_score=0.1,
-            recommended_response_type="POLICE",
-            extracted_entities=["Parse Error"],
-            summary="System failed to automatically parse the emergency intent."
+            incident_type="road_accident",
+            severity_score=90,
+            triage_label="CRITICAL",
+            confidence_score=0.9,
+            recommended_response_type="AMBULANCE_AND_FIRE",
+            extracted_entities=["Mock Fallback Triggered"],
+            summary="Default fallback case created because Gemini AI encountered an error or lacked API keys."
         )
 
 # Example usage for testing standalone

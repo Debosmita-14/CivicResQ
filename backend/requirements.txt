@@ -1,9 +1,10 @@
 fastapi
 uvicorn
 pydantic
-google-generativeai
+google-genai
 python-multipart
 # Use a mock twilio for now
 # twilio
 # Used for websocket
 websockets
+python-dotenv

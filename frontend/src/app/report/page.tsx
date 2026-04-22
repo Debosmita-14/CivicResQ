@@ -31,10 +31,11 @@ export default function CitizenReportScreen() {
   const handleSOSSubmit = async () => {
     setStatus("submitting");
     try {
-      const res = await fetch("http://127.0.0.1:8080/api/v1/incidents/report", {
+      const res = await fetch("/api/v1/incidents/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          reporter_id: "user_" + Math.random().toString(36).substring(7),
           text_description: description || "Emergency reported via SOS button.",
           location: location || { lat: 19.0760, lng: 72.8777 } // default Mumbai approx
         })

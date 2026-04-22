@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, MapPin, Search, Check, X, ShieldAlert, Navigation2, BedDouble, Wind, Box } from "lucide-react";
 
@@ -52,77 +52,75 @@ export default function ResponderApp() {
 }
 
 function AmbulanceDashboard() {
+  const [incidents, setIncidents] = useState<any[]>([]);
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const res = await fetch("/api/v1/incidents/active");
+        if (res.ok) setIncidents(await res.json());
+      } catch (e) {}
+    };
+    fetchIncidents();
+    const interval = setInterval(fetchIncidents, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const activeDispatch = incidents.find(i => ['DISPATCHED', 'ANALYZED'].includes(i.status) && ['CRITICAL', 'HIGH'].includes(i.severity));
+  const pendingRequests = incidents.filter(i => i.status === 'ANALYZED' && !['CRITICAL', 'HIGH'].includes(i.severity));
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      {/* Current Task */}
       <div className="lg:col-span-2 glass-panel p-6 rounded-3xl border border-blue-500/30 bg-blue-950/10">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-white mb-1"><span className="text-blue-400">ALS-04</span> Active Dispatch</h2>
-            <p className="text-zinc-400 text-sm">Target: Road Accident (Severity 95)</p>
-          </div>
-          <div className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30 animate-pulse">
-            EN ROUTE
-          </div>
-        </div>
-
-        {/* Fake Map */}
-        <div className="w-full h-64 bg-zinc-900 rounded-2xl mb-6 relative overflow-hidden border border-zinc-800 flex items-center justify-center">
-            <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: "linear-gradient(#4bf 1px, transparent 1px), linear-gradient(90deg, #4bf 1px, transparent 1px)", backgroundSize: "30px 30px" }}></div>
-            <div className="text-center z-10">
-              <Navigation2 size={40} className="text-blue-500 mx-auto mb-2" />
-              <p className="text-lg font-bold text-white">ETA: 3m 45s</p>
-              <p className="text-sm text-zinc-400">Distance: 1.2 km</p>
+        {activeDispatch ? (
+          <>
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1"><span className="text-blue-400">ALS-UNIT</span> Active Dispatch</h2>
+                <p className="text-zinc-400 text-sm">Target: {activeDispatch.incident_type.replace('_', ' ')} (ID: {activeDispatch.id})</p>
+              </div>
+              <div className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30 animate-pulse">
+                {activeDispatch.status}
+              </div>
             </div>
-            
-            {/* Nav path line fake */}
-            <div className="absolute w-[200px] h-[2px] bg-blue-500/50 rotate-45"></div>
-        </div>
-
-        {/* AI Patient Summary */}
-        <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 mb-6">
-          <h3 className="text-sm font-bold text-zinc-300 mb-2 flex items-center gap-2"><ShieldAlert size={16} className="text-blue-400"/> AI Patient Preview</h3>
-          <p className="text-zinc-400 text-sm leading-relaxed mb-3">
-            AI has detected severe bleeding and potential fractures based on the caller's image. 
-            Patient is likely unconscious. Required equipment: **Spinal Board**, **Tourniquet**, **Oxygen (15L/min)**.
-          </p>
-          <div className="flex gap-2">
-            <span className="px-2 py-1 bg-rose-500/20 text-rose-400 text-xs rounded border border-rose-500/20">Critical Trauma</span>
-            <span className="px-2 py-1 bg-amber-500/20 text-amber-400 text-xs rounded border border-amber-500/20">Male, approx 30s</span>
+            <div className="w-full h-64 bg-zinc-900 rounded-2xl mb-6 relative overflow-hidden border border-zinc-800 flex flex-col items-center justify-center">
+                <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: "linear-gradient(#4bf 1px, transparent 1px), linear-gradient(90deg, #4bf 1px, transparent 1px)", backgroundSize: "30px 30px" }}></div>
+                <Navigation2 size={40} className="text-blue-500 mx-auto mb-2 relative z-10" />
+                <p className="text-lg font-bold text-white relative z-10">GPS Coordinates Linked</p>
+                <p className="text-sm font-mono text-zinc-400 relative z-10">{activeDispatch.location.lat.toFixed(4)}, {activeDispatch.location.lng.toFixed(4)}</p>
+            </div>
+            <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 mb-6">
+              <h3 className="text-sm font-bold text-zinc-300 mb-2 flex items-center gap-2"><ShieldAlert size={16} className="text-blue-400"/> AI Patient Preview</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed mb-3">AI flagged this case as {activeDispatch.severity}. Recommended response ensures correct trauma handling parameters.</p>
+              <div className="flex gap-2">
+                <span className="px-2 py-1 bg-rose-500/20 text-rose-400 text-xs rounded border border-rose-500/20">{activeDispatch.severity} Trauma</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center py-20">
+            <Check size={48} className="text-emerald-500 mb-4 opacity-50" />
+            <h2 className="text-2xl font-bold text-zinc-500">No active dispatches</h2>
+            <p className="text-zinc-600">Ambulance unit standing by.</p>
           </div>
-        </div>
-
-        {/* Actions */}
-        <div className="grid grid-cols-2 gap-4">
-          <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2">
-            <MapPin size={20}/> Arrived at Scene
-          </button>
-          <button className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2">
-            <Truck size={20}/> En Route to Hospital
-          </button>
-        </div>
+        )}
       </div>
 
-      {/* Queue Board */}
       <div className="glass-panel p-6 rounded-3xl border border-zinc-800">
-        <h2 className="text-lg font-bold text-white mb-4">Pending Requests <span className="text-xs bg-zinc-800 px-2 py-0.5 rounded ml-2">Area</span></h2>
-        
+        <h2 className="text-lg font-bold text-white mb-4">Pending Requests <span className="text-xs bg-zinc-800 px-2 py-0.5 rounded ml-2">{pendingRequests.length} Waiting</span></h2>
         <div className="space-y-4">
-          
-          <div className="p-4 bg-zinc-900/80 rounded-xl border border-zinc-700">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-bold bg-amber-500/20 text-amber-500 px-2 py-1 rounded">HIGH</span>
-              <span className="text-xs text-zinc-500">2.4 km away</span>
+          {pendingRequests.length === 0 && <p className="text-sm text-zinc-600 italic">Queue clear.</p>}
+          {pendingRequests.map(inc => (
+             <div key={inc.id} className="p-4 bg-zinc-900/80 rounded-xl border border-zinc-700">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-bold bg-amber-500/20 text-amber-500 px-2 py-1 rounded">{inc.severity}</span>
+              </div>
+              <h3 className="font-semibold text-white capitalize">{inc.incident_type.replace('_', ' ')}</h3>
+              <p className="text-xs text-zinc-400 mb-4">ID: {inc.id}</p>
+              <div className="flex gap-2">
+                <button className="flex-1 bg-blue-600/20 text-blue-500 py-2 rounded-lg font-semibold text-sm border border-blue-500/30 hover:bg-blue-600/30">Accept</button>
+              </div>
             </div>
-            <h3 className="font-semibold text-white">Cardiac Arrest Suspected</h3>
-            <p className="text-xs text-zinc-400 mb-4">Patient reported chest pain.</p>
-            <div className="flex gap-2">
-              <button className="flex-1 bg-emerald-600/20 text-emerald-500 py-2 rounded-lg font-semibold text-sm border border-emerald-500/30 hover:bg-emerald-600/30 flex items-center justify-center gap-1"><Check size={16}/> Accept</button>
-              <button className="flex-1 bg-rose-600/20 text-rose-500 py-2 rounded-lg font-semibold text-sm border border-rose-500/30 hover:bg-rose-600/30 flex items-center justify-center gap-1"><X size={16}/> Reject</button>
-            </div>
-          </div>
-          
+          ))}
         </div>
       </div>
     </div>
@@ -130,6 +128,21 @@ function AmbulanceDashboard() {
 }
 
 function HospitalDashboard() {
+  const [incidents, setIncidents] = useState<any[]>([]);
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const res = await fetch("/api/v1/incidents/active");
+        if (res.ok) setIncidents(await res.json());
+      } catch (e) {}
+    };
+    fetchIncidents();
+    const interval = setInterval(fetchIncidents, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const incomingCriticals = incidents.filter(i => ['CRITICAL', 'HIGH'].includes(i.severity));
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       
@@ -140,7 +153,7 @@ function HospitalDashboard() {
           <div className="space-y-4 text-sm font-medium">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-zinc-300"><BedDouble size={16} className="text-emerald-500"/> ICU / Trauma</span>
-              <span className="text-emerald-400 bg-emerald-500/10 px-2 rounded">4 / 12</span>
+              <span className="text-emerald-400 bg-emerald-500/10 px-2 rounded">{4 + incomingCriticals.length} / 12</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-zinc-300"><Wind size={16} className="text-blue-500"/> Oxygen Beds</span>
@@ -151,50 +164,39 @@ function HospitalDashboard() {
               <span className="text-zinc-400 bg-zinc-800 px-2 rounded">124 / 200</span>
             </div>
           </div>
-          <button className="w-full mt-6 bg-zinc-800 hover:bg-zinc-700 text-xs py-2 rounded font-semibold text-white transition-colors">Update Capacity DB</button>
         </div>
       </div>
 
       {/* Incoming Triage AI Stream */}
       <div className="lg:col-span-3 glass-panel p-6 rounded-3xl border border-zinc-800">
         <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
-          <h2 className="text-lg font-bold text-white">Inbound Trauma Patients</h2>
+          <h2 className="text-lg font-bold text-white">Inbound Triage Patients</h2>
           <span className="text-xs text-zinc-500"><span className="w-2 h-2 rounded-full inline-block bg-emerald-500 mr-2 animate-pulse"/>Live Feed</span>
         </div>
 
         <div className="space-y-4">
-          {/* Patient Card */}
-          <div className="bg-zinc-900/60 p-5 rounded-2xl border border-rose-500/30 flex flex-col md:flex-row gap-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
-            
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="bg-rose-500 text-white font-bold text-xs px-2 py-0.5 rounded">CRITICAL</span>
-                <span className="text-zinc-400 text-sm font-medium">ETA: 4 minutes (Ambulance ALS-04)</span>
+          {incomingCriticals.length === 0 && <p className="text-zinc-500 text-sm text-center py-10">No incoming criticals routed to this facility.</p>}
+          {incomingCriticals.map(inc => (
+            <div key={inc.id} className="bg-zinc-900/60 p-5 rounded-2xl border border-rose-500/30 flex flex-col md:flex-row gap-6 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="bg-rose-500 text-white font-bold text-xs px-2 py-0.5 rounded">{inc.severity}</span>
+                  <span className="text-zinc-400 text-sm font-medium">Tracking ID: {inc.id}</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2 capitalize">{inc.incident_type.replace('_', ' ')}</h3>
+                <p className="text-zinc-300 text-sm leading-relaxed mb-4">Patient incoming. Prepare resources accordingly based on AI severity classification and vitals transmitted en route.</p>
+                <div className="flex gap-2">
+                  <span className="text-xs border border-blue-500/40 text-blue-400 bg-blue-500/10 px-2 py-1 rounded">Prepare OT</span>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Severe Road Traffic Collision</h3>
-              <p className="text-zinc-300 text-sm leading-relaxed mb-4">
-                Male victim. Probable internal bleeding and femur fracture. 
-                Vitals transmitted: BP 90/60, HR 120. Oxygen administered in transit.
-              </p>
-              <div className="flex gap-2">
-                <span className="text-xs border border-blue-500/40 text-blue-400 bg-blue-500/10 px-2 py-1 rounded">Prepare OT Room 2</span>
-                <span className="text-xs border border-rose-500/40 text-rose-400 bg-rose-500/10 px-2 py-1 rounded">Blood Type: O Negative likely needed</span>
+              <div className="flex flex-col justify-center min-w-[140px] gap-2">
+                <button className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold py-3 rounded-xl shadow-lg transition-all text-center">Acknowledge</button>
               </div>
             </div>
-
-            <div className="flex flex-col justify-center min-w-[140px] gap-2">
-              <button className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold py-3 rounded-xl shadow-lg transition-all text-center">
-                Acknowledge
-              </button>
-              <button className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-semibold py-3 rounded-xl border border-zinc-700 transition-all text-center">
-                Declare Divert
-              </button>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
-
     </div>
   )
 }

@@ -1,12 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Map, Siren, CheckCircle2, TrendingUp, AlertTriangle, ShieldCheck, Database, BrainCircuit, Users } from "lucide-react";
 
 export default function DeepAdminDashboard() {
   const [activeTab, setActiveTab] = useState("alerts");
+  const [incidents, setIncidents] = useState<any[]>([]);
 
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const res = await fetch("/api/v1/incidents/active");
+        if (res.ok) {
+          const data = await res.json();
+          setIncidents(data);
+        }
+      } catch (e) {
+        console.error("Live DB feed disconnected", e);
+      }
+    };
+    fetchIncidents();
+    const interval = setInterval(fetchIncidents, 2000);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className="flex h-screen w-full bg-[#09090b] text-zinc-100 overflow-hidden font-sans">
       
@@ -71,26 +88,32 @@ export default function DeepAdminDashboard() {
                       <div className="flex flex-col bg-zinc-900/40 rounded-2xl border border-zinc-800 p-4">
                         <div className="flex justify-between items-center mb-4 border-b border-zinc-800 pb-3">
                           <span className="font-bold text-blue-400">LOW PRIORITY</span>
-                          <span className="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs font-bold">12 Alerts</span>
+                          <span className="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs font-bold">{incidents.filter(i => i.severity === 'LOW').length} Alerts</span>
                         </div>
                         <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
-                          <div className="p-3 bg-zinc-950 rounded-xl border border-blue-900/30 shadow">
-                            <p className="text-white font-semibold text-sm">Minor Collision</p>
-                            <p className="text-zinc-500 text-xs mt-1">Sector 4 • No injuries</p>
-                          </div>
+                          {incidents.filter(i => i.severity === 'LOW').length === 0 && <p className="text-zinc-600 text-xs text-center py-4">No active low priority calls.</p>}
+                          {incidents.filter(i => i.severity === 'LOW').map(inc => (
+                            <div key={inc.id} className="p-3 bg-zinc-950 rounded-xl border border-blue-900/30 shadow">
+                              <p className="text-white font-semibold text-sm capitalize">{inc.incident_type.replace('_', ' ')}</p>
+                              <p className="text-zinc-500 text-xs mt-1">ID: {inc.id} • {inc.status}</p>
+                            </div>
+                          ))}
                         </div>
                       </div>
                       {/* MEDIUM */}
                       <div className="flex flex-col bg-zinc-900/40 rounded-2xl border border-zinc-800 p-4">
                         <div className="flex justify-between items-center mb-4 border-b border-zinc-800 pb-3">
                           <span className="font-bold text-amber-400">MEDIUM PRIORITY</span>
-                          <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-bold">5 Alerts</span>
+                          <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-bold">{incidents.filter(i => i.severity === 'MEDIUM').length} Alerts</span>
                         </div>
                         <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
-                          <div className="p-3 bg-zinc-950 rounded-xl border border-amber-900/30 shadow">
-                            <p className="text-white font-semibold text-sm">Residential Fire Alarm</p>
-                            <p className="text-zinc-500 text-xs mt-1">AURA Tower • Investigating</p>
-                          </div>
+                          {incidents.filter(i => i.severity === 'MEDIUM').length === 0 && <p className="text-zinc-600 text-xs text-center py-4">No active medium priority calls.</p>}
+                          {incidents.filter(i => i.severity === 'MEDIUM').map(inc => (
+                            <div key={inc.id} className="p-3 bg-zinc-950 rounded-xl border border-amber-900/30 shadow">
+                              <p className="text-white font-semibold text-sm capitalize">{inc.incident_type.replace('_', ' ')}</p>
+                              <p className="text-zinc-500 text-xs mt-1">ID: {inc.id} • {inc.status}</p>
+                            </div>
+                          ))}
                         </div>
                       </div>
                       {/* CRITICAL */}
@@ -98,13 +121,16 @@ export default function DeepAdminDashboard() {
                         <div className="absolute top-0 left-0 w-full h-1 bg-rose-500 animate-pulse"></div>
                         <div className="flex justify-between items-center mb-4 border-b border-rose-900/50 pb-3">
                           <span className="font-bold text-rose-500 flex items-center gap-1"><Siren size={16}/> CRITICAL</span>
-                          <span className="bg-rose-500 text-white px-2 py-0.5 rounded text-xs font-bold shadow-[0_0_10px_rgba(225,29,72,0.5)]">3 Alerts</span>
+                          <span className="bg-rose-500 text-white px-2 py-0.5 rounded text-xs font-bold shadow-[0_0_10px_rgba(225,29,72,0.5)]">{incidents.filter(i => ['CRITICAL', 'HIGH'].includes(i.severity)).length} Alerts</span>
                         </div>
                         <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
-                          <div className="p-3 bg-rose-900/20 rounded-xl border border-rose-500/40 shadow shadow-rose-900/20">
-                            <p className="text-white font-bold text-sm">Highway Mass Collision</p>
-                            <p className="text-rose-400 text-xs mt-1">Multiple casualties • Dispatching ALS</p>
-                          </div>
+                          {incidents.filter(i => ['CRITICAL', 'HIGH'].includes(i.severity)).length === 0 && <p className="text-zinc-600 text-xs text-center py-4">No critical calls detected.</p>}
+                          {incidents.filter(i => ['CRITICAL', 'HIGH'].includes(i.severity)).map(inc => (
+                            <div key={inc.id} className="p-3 bg-rose-900/20 rounded-xl border border-rose-500/40 shadow shadow-rose-900/20">
+                              <p className="text-white font-bold text-sm capitalize">{inc.incident_type.replace('_', ' ')}</p>
+                              <p className="text-rose-400 text-xs mt-1">ID: {inc.id} • {inc.assigned_ambulance ? `Dispatching ${inc.assigned_ambulance}` : 'Pending Dispatch'}</p>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
