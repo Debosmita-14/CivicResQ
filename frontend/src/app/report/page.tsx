@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Mic, Camera, AlertOctagon, Send, FileText, CheckCircle2, ShieldAlert, HeartPulse, Clock, Navigation } from "lucide-react";
+import { MapPin, Mic, Camera, AlertOctagon, Send, FileText, CheckCircle2, ShieldAlert, HeartPulse, Clock, Navigation, LogOut } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
 
@@ -15,6 +15,7 @@ export default function ReportPage() {
 }
 
 function CitizenReportScreen() {
+  const { signOutUser, profile } = useAuth();
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [loadingLoc, setLoadingLoc] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
@@ -137,6 +138,21 @@ function CitizenReportScreen() {
   return (
     <div className="min-h-screen w-full bg-[#09090b] text-zinc-100 p-4 font-sans flex flex-col items-center justify-center relative overflow-hidden">
       
+      {/* Top Bar for Logout */}
+      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20">
+        <div className="flex items-center gap-2">
+          <ShieldAlert size={20} className="text-rose-500" />
+          <span className="font-bold text-sm tracking-tight">CivicResQ</span>
+        </div>
+        <button 
+          onClick={() => signOutUser()}
+          className="text-xs bg-white/5 hover:bg-white/10 border border-zinc-800 px-4 py-2 rounded-xl flex items-center gap-2 transition-all text-zinc-400 hover:text-white"
+        >
+          <LogOut size={14} />
+          Sign Out
+        </button>
+      </div>
+
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-900/10 via-[#09090b] to-[#09090b] z-0" />
 
       <motion.div 

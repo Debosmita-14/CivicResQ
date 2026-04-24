@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Truck, MapPin, Search, Check, X, ShieldAlert, Navigation2, BedDouble, Wind, Box } from "lucide-react";
+import { Truck, MapPin, Search, Check, X, ShieldAlert, Navigation2, BedDouble, Wind, Box, LogOut } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
+
+import { useAuth } from "@/context/AuthContext";
 
 export default function ResponderPage() {
   return (
@@ -14,30 +16,40 @@ export default function ResponderPage() {
 }
 
 function ResponderApp() {
+  const { signOutUser } = useAuth();
   const [role, setRole] = useState<"ambulance" | "hospital">("ambulance");
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans p-4 md:p-8">
       {/* Header Selector */}
-      <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div>
+      <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative z-10">
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
             Responder Network <span className="text-sm font-semibold px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-md">LIVE</span>
           </h1>
           <p className="text-zinc-400">Manage real-time dispatch and resource allocation.</p>
         </div>
-        <div className="flex bg-zinc-900 border border-zinc-800 rounded-xl p-1">
+        <div className="flex items-center gap-3">
+          <div className="flex bg-zinc-900 border border-zinc-800 rounded-xl p-1">
+            <button 
+              onClick={() => setRole("ambulance")}
+              className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${role === "ambulance" ? "bg-zinc-800 text-white shadow" : "text-zinc-500 hover:text-zinc-300"}`}
+            >
+              Ambulance
+            </button>
+            <button 
+              onClick={() => setRole("hospital")}
+              className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${role === "hospital" ? "bg-zinc-800 text-white shadow" : "text-zinc-500 hover:text-zinc-300"}`}
+            >
+              Hospital
+            </button>
+          </div>
           <button 
-            onClick={() => setRole("ambulance")}
-            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${role === "ambulance" ? "bg-zinc-800 text-white shadow" : "text-zinc-500 hover:text-zinc-300"}`}
+            onClick={() => signOutUser()}
+            className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-all shadow-lg hover:border-zinc-700"
+            title="Sign Out"
           >
-            Ambulance Fleet
-          </button>
-          <button 
-            onClick={() => setRole("hospital")}
-            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${role === "hospital" ? "bg-zinc-800 text-white shadow" : "text-zinc-500 hover:text-zinc-300"}`}
-          >
-            Hospital Triage
+            <LogOut size={20} />
           </button>
         </div>
       </div>
