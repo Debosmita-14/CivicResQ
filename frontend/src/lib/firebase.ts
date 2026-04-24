@@ -25,7 +25,13 @@ let db: Firestore | undefined;
 function getFirebaseApp() {
   if (typeof window === "undefined") return undefined;
   if (!app) {
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    console.log("Firebase initializing with config:", { ...firebaseConfig, apiKey: "hidden" });
+    try {
+      app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+      console.log("Firebase initialized successfully");
+    } catch (err) {
+      console.error("Firebase initialization failed:", err);
+    }
   }
   return app;
 }
