@@ -23,3 +23,5 @@ services:
         value: "863423760552"
       - key: NEXT_PUBLIC_FIREBASE_APP_ID
         value: "1:863423760552:web:015ec6a84949c88874da9d"
+      - key: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+        value: "G-4L5H56M6V2"
