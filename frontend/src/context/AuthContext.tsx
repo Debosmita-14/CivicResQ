@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     profileData: Omit<UserProfile, "uid" | "email" | "photoURL" | "approved" | "createdAt">
   ) {
-    const fireAuth = getAuth();
+    const fireAuth = auth();
     const cred = await createUserWithEmailAndPassword(fireAuth, email, password);
     const newProfile: UserProfile = {
       uid: cred.user.uid,
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Email/Password sign in
   async function signIn(email: string, password: string) {
-    const fireAuth = getAuth();
+    const fireAuth = auth();
     const cred = await signInWithEmailAndPassword(fireAuth, email, password);
     const p = await fetchProfile(cred.user);
     if (p) {
@@ -151,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Google login
   async function signInWithGoogleFn() {
-    const fireAuth = getAuth();
+    const fireAuth = auth();
     const cred = await signInWithPopup(fireAuth, googleProvider);
     const existing = await fetchProfile(cred.user);
     if (existing) {
@@ -165,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Phone OTP — Step 1: Send code
   async function sendPhoneOTP(phone: string): Promise<ConfirmationResult> {
-    const fireAuth = getAuth();
+    const fireAuth = auth();
     const verifier = setupRecaptcha("recaptcha-container");
     return signInWithPhoneNumber(fireAuth, phone, verifier);
   }
@@ -200,7 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Sign out
   async function signOutUser() {
-    const fireAuth = getAuth();
+    const fireAuth = auth();
     await firebaseSignOut(fireAuth);
     setUser(null);
     setProfile(null);
@@ -209,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Password reset
   async function resetPasswordFn(email: string) {
-    const fireAuth = getAuth();
+    const fireAuth = auth();
     await sendPasswordResetEmail(fireAuth, email);
   }
 
