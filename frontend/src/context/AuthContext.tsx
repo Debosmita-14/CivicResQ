@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Listen for auth state
   useEffect(() => {
     try {
-      const fireAuth = getAuth();
+      const fireAuth = auth();
       const unsubscribe = onAuthStateChanged(fireAuth, async (u) => {
         setUser(u);
         if (u) {
