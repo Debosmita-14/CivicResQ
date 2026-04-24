@@ -13,8 +13,8 @@ const firebaseConfig = {
   projectId: "civicresq",
   storageBucket: "civicresq.firebasestorage.app",
   messagingSenderId: "863423760552",
-  appId: "1:863423760552:web:015ec6a84949c88874da9d",
-  measurementId: "G-4L5H56M6V2",
+  appId: "1:863423760552:web:c9e7d4ab3321712274da9d",
+  measurementId: "G-JEQB9VWQHX",
 };
 
 // Lazy-initialize Firebase only on the client side to prevent SSR build errors
