@@ -8,7 +8,7 @@ import {
 import { getFirestore, type Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  apiKey: "AIzaSyAuGZvSwLijM00O1sTVRuTFejdxoUDy47U",
   authDomain: "civicresq.firebaseapp.com",
   projectId: "civicresq",
   storageBucket: "civicresq.firebasestorage.app",
