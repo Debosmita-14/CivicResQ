@@ -3,8 +3,17 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, MapPin, Search, Check, X, ShieldAlert, Navigation2, BedDouble, Wind, Box } from "lucide-react";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-export default function ResponderApp() {
+export default function ResponderPage() {
+  return (
+    <ProtectedRoute allowedRoles={["responder"]}>
+      <ResponderApp />
+    </ProtectedRoute>
+  );
+}
+
+function ResponderApp() {
   const [role, setRole] = useState<"ambulance" | "hospital">("ambulance");
 
   return (

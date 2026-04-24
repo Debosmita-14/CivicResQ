@@ -2,14 +2,55 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ShieldAlert, ActivitySquare, Stethoscope, ArrowRight } from "lucide-react";
+import { ShieldAlert, ActivitySquare, Stethoscope, ArrowRight, LogIn, User } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { ROLE_ROUTES, ROLE_LABELS } from "@/lib/types";
 
 export default function Home() {
+  const { user, profile, loading } = useAuth();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#09090b] text-white p-6 relative overflow-hidden font-sans">
       
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-zinc-800/10 via-[#09090b] to-[#09090b] z-0" />
       <div className="absolute inset-0 bg-[url('https://transparenttextures.com/patterns/cubes.png')] opacity-5 mix-blend-overlay z-0" />
+
+      {/* Top Navigation */}
+      <div className="absolute top-0 left-0 right-0 z-20 flex justify-between items-center px-6 py-4">
+        <div className="flex items-center gap-2">
+          <ShieldAlert size={20} className="text-rose-500" />
+          <span className="font-bold text-sm tracking-tight">CivicResQ</span>
+        </div>
+        <div className="flex items-center gap-3">
+          {!loading && user && profile ? (
+            <>
+              <Link
+                href={ROLE_ROUTES[profile.role]}
+                className="text-sm text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+              >
+                Go to Dashboard →
+              </Link>
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-zinc-700 px-3 py-1.5 rounded-xl text-sm text-white font-medium transition-all"
+              >
+                <div className="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 text-[10px] font-bold">
+                  {profile.fullName?.charAt(0)?.toUpperCase() || "U"}
+                </div>
+                {profile.fullName?.split(" ")[0]}
+              </Link>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-zinc-700 px-4 py-2 rounded-xl text-sm text-white font-semibold transition-all"
+            >
+              <LogIn size={16} />
+              Sign In
+            </Link>
+          )}
+        </div>
+      </div>
 
       <motion.div 
         initial={{ y: -30, opacity: 0 }}

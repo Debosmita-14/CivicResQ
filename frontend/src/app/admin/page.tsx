@@ -2,9 +2,47 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, Map, Siren, CheckCircle2, TrendingUp, AlertTriangle, ShieldCheck, Database, BrainCircuit, Users } from "lucide-react";
+import {
+  Activity,
+  Map,
+  Siren,
+  CheckCircle2,
+  TrendingUp,
+  AlertTriangle,
+  ShieldCheck,
+  Database,
+  BrainCircuit,
+  Users,
+  UserCheck,
+  UserX,
+  Loader2,
+  User as UserIcon,
+  LogOut,
+} from "lucide-react";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+import { db as getDb } from "@/lib/firebase";
+import { UserProfile, ROLE_LABELS } from "@/lib/types";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 
-export default function DeepAdminDashboard() {
+export default function AdminPage() {
+  return (
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <DeepAdminDashboard />
+    </ProtectedRoute>
+  );
+}
+
+function DeepAdminDashboard() {
+  const { signOutUser, profile } = useAuth();
   const [activeTab, setActiveTab] = useState("alerts");
   const [incidents, setIncidents] = useState<any[]>([]);
 
@@ -24,6 +62,7 @@ export default function DeepAdminDashboard() {
     const interval = setInterval(fetchIncidents, 2000);
     return () => clearInterval(interval);
   }, []);
+
   return (
     <div className="flex h-screen w-full bg-[#09090b] text-zinc-100 overflow-hidden font-sans">
       
@@ -46,9 +85,27 @@ export default function DeepAdminDashboard() {
         <nav className="flex-1 p-3 md:p-4 flex flex-col gap-2">
           <NavItem icon={<Map size={20} />} label="Live Radar" active={activeTab === "map"} onClick={() => setActiveTab("map")} />
           <NavItem icon={<AlertTriangle size={20} />} label="Severity Matrix" active={activeTab === "alerts"} onClick={() => setActiveTab("alerts")} />
+          <NavItem icon={<Users size={20} />} label="User Management" active={activeTab === "users"} onClick={() => setActiveTab("users")} />
           <NavItem icon={<ShieldCheck size={20} />} label="Fraud & Identity" active={activeTab === "fraud"} onClick={() => setActiveTab("fraud")} />
           <NavItem icon={<Database size={20} />} label="Resource DB" active={activeTab === "db"} onClick={() => setActiveTab("db")} />
         </nav>
+
+        {/* Bottom user menu */}
+        <div className="p-3 md:p-4 border-t border-zinc-800">
+          <Link href="/profile" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-zinc-800/50 transition-colors mb-2">
+            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 text-xs font-bold">
+              {profile?.fullName?.charAt(0)?.toUpperCase() || "A"}
+            </div>
+            <span className="text-sm text-zinc-300 hidden md:block truncate">{profile?.fullName || "Admin"}</span>
+          </Link>
+          <button
+            onClick={signOutUser}
+            className="flex items-center gap-3 px-3 py-2 rounded-xl text-zinc-500 hover:text-rose-400 hover:bg-rose-500/5 transition-all w-full"
+          >
+            <LogOut size={18} />
+            <span className="text-sm hidden md:block">Sign Out</span>
+          </button>
+        </div>
       </motion.aside>
 
       {/* Main Complex View */}
@@ -179,6 +236,8 @@ export default function DeepAdminDashboard() {
               </div>
             )}
 
+            {activeTab === "users" && <UserManagementPanel />}
+
             {activeTab === "fraud" && (
               <div className="flex-1 glass-panel rounded-[2rem] border border-amber-900/50 p-6 flex flex-col">
                 <h3 className="text-2xl font-bold text-amber-500 mb-4 flex items-center gap-2"><ShieldCheck size={24}/> Fraud Detection Radar</h3>
@@ -200,6 +259,185 @@ export default function DeepAdminDashboard() {
 
         </div>
       </main>
+    </div>
+  );
+}
+
+/* -------- User Management Panel (Admin Approval) -------- */
+function UserManagementPanel() {
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "pending" | "approved">("all");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  async function fetchUsers() {
+    setLoading(true);
+    try {
+      const snapshot = await getDocs(collection(getDb(), "users"));
+      const allUsers: UserProfile[] = [];
+      snapshot.forEach((d) => allUsers.push(d.data() as UserProfile));
+      setUsers(allUsers);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function toggleApproval(uid: string, approve: boolean) {
+    setActionLoading(uid);
+    try {
+      await updateDoc(doc(getDb(), "users", uid), { approved: approve });
+      setUsers((prev) =>
+        prev.map((u) => (u.uid === uid ? { ...u, approved: approve } : u))
+      );
+    } catch (err) {
+      console.error("Failed to update approval:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  const filteredUsers = users.filter((u) => {
+    if (filter === "pending") return u.role === "responder" && !u.approved;
+    if (filter === "approved") return u.approved;
+    return true;
+  });
+
+  const pendingCount = users.filter(
+    (u) => u.role === "responder" && !u.approved
+  ).length;
+
+  return (
+    <div className="flex-1 glass-panel rounded-[2rem] border border-zinc-800 p-6 flex flex-col overflow-hidden">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+          <Users size={22} />
+          User Management
+          {pendingCount > 0 && (
+            <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-bold ml-2 animate-pulse">
+              {pendingCount} pending
+            </span>
+          )}
+        </h3>
+        <div className="flex bg-zinc-900 border border-zinc-800 rounded-xl p-1">
+          {(["all", "pending", "approved"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize ${
+                filter === f
+                  ? "bg-zinc-800 text-white shadow"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 size={32} className="animate-spin text-blue-500" />
+        </div>
+      ) : filteredUsers.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <Users size={48} className="text-zinc-700 mb-4" />
+          <p className="text-zinc-500 text-sm">No users found.</p>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
+          {filteredUsers.map((u) => (
+            <motion.div
+              key={u.uid}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+                u.role === "responder" && !u.approved
+                  ? "bg-amber-950/20 border-amber-500/30"
+                  : "bg-zinc-900/50 border-zinc-800"
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold ${
+                    u.role === "citizen"
+                      ? "bg-rose-500/20 text-rose-400"
+                      : u.role === "responder"
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : "bg-blue-500/20 text-blue-400"
+                  }`}
+                >
+                  {u.fullName?.charAt(0)?.toUpperCase() || "?"}
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm">
+                    {u.fullName}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-zinc-500 text-xs">
+                      {u.email || u.phone}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        u.role === "citizen"
+                          ? "bg-rose-500/15 text-rose-400"
+                          : u.role === "responder"
+                          ? "bg-emerald-500/15 text-emerald-400"
+                          : "bg-blue-500/15 text-blue-400"
+                      }`}
+                    >
+                      {ROLE_LABELS[u.role]}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {u.role === "responder" && !u.approved ? (
+                  <>
+                    <button
+                      onClick={() => toggleApproval(u.uid, true)}
+                      disabled={actionLoading === u.uid}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600/20 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/30 hover:bg-emerald-600/30 transition-all disabled:opacity-50"
+                    >
+                      {actionLoading === u.uid ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <UserCheck size={14} />
+                      )}
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => toggleApproval(u.uid, false)}
+                      disabled={actionLoading === u.uid}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-rose-600/20 text-rose-400 text-xs font-bold rounded-lg border border-rose-500/30 hover:bg-rose-600/30 transition-all disabled:opacity-50"
+                    >
+                      <UserX size={14} />
+                      Deny
+                    </button>
+                  </>
+                ) : (
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded-lg ${
+                      u.approved
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                    }`}
+                  >
+                    {u.approved ? "Active" : "Pending"}
+                  </span>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

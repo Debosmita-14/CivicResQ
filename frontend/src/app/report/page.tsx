@@ -3,8 +3,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Mic, Camera, AlertOctagon, Send, FileText, CheckCircle2, ShieldAlert, HeartPulse, Clock, Navigation } from "lucide-react";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/context/AuthContext";
 
-export default function CitizenReportScreen() {
+export default function ReportPage() {
+  return (
+    <ProtectedRoute allowedRoles={["citizen"]}>
+      <CitizenReportScreen />
+    </ProtectedRoute>
+  );
+}
+
+function CitizenReportScreen() {
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [loadingLoc, setLoadingLoc] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export'
+  /* output: 'export' removed — Firebase Auth requires dynamic rendering */
 };
 
 export default nextConfig;
