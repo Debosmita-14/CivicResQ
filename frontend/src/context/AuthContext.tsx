@@ -23,7 +23,7 @@ import {
   getDoc,
   setDoc,
 } from "firebase/firestore";
-import { auth as getAuth, db as getDb, googleProvider, setupRecaptcha } from "@/lib/firebase";
+import { auth, db, googleProvider, setupRecaptcha } from "@/lib/firebase";
 import { UserProfile, UserRole, ROLE_ROUTES } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch user profile from Firestore
   async function fetchProfile(u: User): Promise<UserProfile | null> {
     try {
-      const fireDb = getDb();
+      const fireDb = db();
       const docRef = doc(fireDb, "users", u.uid);
       const snap = await getDoc(docRef);
       if (snap.exists()) {
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Save profile to Firestore
   async function saveProfile(uid: string, data: Partial<UserProfile>) {
-    const fireDb = getDb();
+    const fireDb = db();
     const docRef = doc(fireDb, "users", uid);
     await setDoc(docRef, data, { merge: true });
   }
