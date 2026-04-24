@@ -464,7 +464,7 @@ export default function AuthPage() {
         <div className="mt-6 text-center space-y-2">
           {mode === "login" && (
             <p className="text-sm text-zinc-400">
-              Don't have access?{" "}
+              Don&apos;t have access?{" "}
               <button onClick={() => switchMode("signup")} className="text-blue-400 font-bold hover:underline">
                 Request Account
               </button>

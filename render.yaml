@@ -12,16 +12,16 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: NEXT_PUBLIC_FIREBASE_API_KEY
-        value: "AIzaSyDQLGgzo4u2M6aleZV8wiWDq2N8VgJvB6g"
+        sync: false
       - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-        value: "civicresq.firebaseapp.com"
+        sync: false
       - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-        value: "civicresq"
+        sync: false
       - key: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-        value: "civicresq.firebasestorage.app"
+        sync: false
       - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-        value: "863423760552"
+        sync: false
       - key: NEXT_PUBLIC_FIREBASE_APP_ID
-        value: "1:863423760552:web:015ec6a84949c88874da9d"
+        sync: false
       - key: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-        value: "G-4L5H56M6V2"
+        sync: false

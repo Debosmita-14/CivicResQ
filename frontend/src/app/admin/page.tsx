@@ -270,10 +270,6 @@ function UserManagementPanel() {
   const [filter, setFilter] = useState<"all" | "pending" | "approved">("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   async function fetchUsers() {
     setLoading(true);
     try {
@@ -287,6 +283,10 @@ function UserManagementPanel() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   async function toggleApproval(uid: string, approve: boolean) {
     setActionLoading(uid);

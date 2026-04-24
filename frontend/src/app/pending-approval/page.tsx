@@ -23,7 +23,7 @@ export default function PendingApprovalPage() {
 
         <h2 className="text-2xl font-bold tracking-tight mb-2">Account Pending Approval</h2>
         <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-          Your responder account is awaiting admin verification. You'll be notified once approved.
+          Your responder account is awaiting admin verification. You&apos;ll be notified once approved.
         </p>
 
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-6 text-left space-y-2">

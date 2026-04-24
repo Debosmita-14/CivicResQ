@@ -80,7 +80,7 @@ def analyze_incident_multimodal(text_description: str, image_bytes: Optional[byt
     # Generate response
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-1.5-flash',
             contents=contents,
             config=types.GenerateContentConfig(response_mime_type="application/json")
         )
