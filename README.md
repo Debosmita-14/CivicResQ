@@ -191,7 +191,7 @@ Responder & Admin Dashboards
 - 🧠 Advanced AI prediction models  
 - 📡 Real-time notifications *(WebSockets)*  
 - 📊 Advanced analytics dashboard  
-- 🌍 Multi-language support *(English, Hindi, Bengali,native languages)*  
+- 🌍 Multi-language support *(English, Hindi, Bengali, Native languages)*  
 - 📱 Mobile app *(React Native)*  
 
 ---
