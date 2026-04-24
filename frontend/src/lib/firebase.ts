@@ -8,13 +8,13 @@ import {
 import { getFirestore, type Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAuGZvSwLijM00O1sTVRuTFejdxoUDy47U",
+  apiKey: "AIzaSyDQLGgzo4u2M6aleZV8wiWDq2N8VgJvB6g",
   authDomain: "civicresq.firebaseapp.com",
   projectId: "civicresq",
   storageBucket: "civicresq.firebasestorage.app",
   messagingSenderId: "863423760552",
   appId: "1:863423760552:web:c9e7d4ab3321712274da9d",
-  measurementId: "G-JEQB9VWQHX",
+  measurementId: "G-JEQB9VWQHX"
 };
 
 // Lazy-initialize Firebase only on the client side to prevent SSR build errors

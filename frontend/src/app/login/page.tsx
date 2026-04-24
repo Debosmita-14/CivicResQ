@@ -227,9 +227,9 @@ export default function AuthPage() {
           </h2>
           <p className="text-sm text-zinc-400 mt-1">
             {mode === "login" && "Sign in to Secure CivicResQ Platform"}
-            {mode === "signup" && "Join the CivicResQ Network"}
-            {mode === "phone" && "Login with your phone number"}
-            {mode === "forgot" && "We'll send you a reset link"}
+            {mode === "signup" && "Join the Secure CivicResQ Network"}
+            {mode === "phone" && "Login Securely with your phone number"}
+            {mode === "forgot" && "We'll send you a Secure reset link"}
           </p>
         </div>
 
